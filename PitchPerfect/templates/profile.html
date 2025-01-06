@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Profile</title>
+    <script>
+        function toggleInputField() {
+            const updateField = document.getElementById("update_field").value;
+            const newValueInput = document.getElementById("new_value_input");
+            const teamDropdown = document.getElementById("team_dropdown");
+
+            if (updateField === "team") {
+                newValueInput.style.display = "none";
+                teamDropdown.style.display = "block";
+            } else {
+                newValueInput.style.display = "block";
+                teamDropdown.style.display = "none";
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Update Profile</h1>
+    <form method="post">
+        <label for="update_field">Select the field to update:</label>
+        <select id="update_field" name="update_field" required onchange="toggleInputField()">
+            <option value="" disabled selected>Select field</option>
+            <option value="name">Name</option>
+            <option value="email">Email</option>
+            <option value="password">Password</option>
+            <option value="role">Role</option>
+            <option value="team">Team</option>
+        </select>
+
+        <div id="new_value_input" style="margin-top: 10px;">
+            <label for="new_value">Enter new value:</label>
+            <input type="text" id="new_value" name="new_value" placeholder="Enter new value">
+        </div>
+
+        <select id="new_value_team" name="new_value">
+            {% for league, divisions in teams.items() %}
+                <optgroup label="{{ league }}">
+                    {% for division, team_list in divisions.items() %}
+                        {% for team in team_list %}
+                            <option value="{{ team.name }}" {% if team.name == user.team %}selected{% endif %}>
+                                {{ team.name }}
+                            </option>
+                        {% endfor %}
+                    {% endfor %}
+                </optgroup>
+            {% endfor %}
+        </select>
+        
+
+        <button type="submit" style="margin-top: 20px;">Update</button>
+    </form>
+
+    <h2>Your Current Profile</h2>
+    <ul>
+        <li><strong>Name:</strong> {{ user.name }}</li>
+        <li><strong>Email:</strong> {{ user.email }}</li>
+        <li><strong>Password:</strong> (hidden for security)</li>
+        <li><strong>Role:</strong> {{ user.role }}</li>
+        <li><strong>Team:</strong> {{ user.team }}</li>
+    </ul>
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>

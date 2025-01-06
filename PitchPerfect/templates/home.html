@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+</head>
+<body>
+    <h1>Welcome {{ user["name"] }}!</h1>
+    <p>Your Team: {{ user["team"] }}</p>
+    <p>team ID: {{ team_id }}</p>
+    <p><strong>First Year of Play:</strong> {{ teamDetail["firstYearOfPlay"] }}</p>
+    <p><strong>League:</strong> {{ teamDetail["league"] }}</p>
+    <p><strong>Active Status:</strong> {{ teamDetail["active"] }}</p>
+    <div class="actions">
+        <a href="{{ url_for('profile') }}">Edit Profile</a> | 
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+</body>
+</html>
