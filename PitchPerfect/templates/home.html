@@ -1,19 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Home Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pitcher Perfect ⚾</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Plotly.js for chart creation -->
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.11.1"></script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar Styling */
+        nav {
+            background-color: #003087;
+            color: white;
+            padding: 10px 20px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: 600;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .welcome {
+            text-align: right;
+            padding: 10px 20px;
+            background-color: #f5f7fa;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f7fa;
+
+
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #c8102e;
+        }
+
+        .markdown {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f7fa;
+            border: 1px solid #e1e1e1;
+            border-radius: 6px;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #003087;
+            color: white;
+            transition: left 0.3s ease;
+            padding: 15px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin: 15px 0;
+            padding: 5px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar a:hover {
+            text-decoration: underline;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 70px;
+            /* Adjust position to below the navbar */
+            left: 20px;
+            background-color: #c8102e;
+            /* MLB Red */
+            color: white;
+            border: none;
+            width: 50px;
+            /* Make width and height equal */
+            height: 50px;
+            border-radius: 50%;
+            /* Ensures a circular shape */
+            cursor: pointer;
+            font-size: 1.2rem;
+            /* Adjust font size to fit inside the button */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            /* Ensure it appears above the content */
+        }
+
+
+        @media (max-width: 768px) {
+            .toggle-btn {
+                top: 70px;
+                /* Adjust for mobile screens */
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 1.2rem;
+            }
+
+            .sidebar {
+                width: 200px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Welcome {{ user["name"] }}!</h1>
-    <p>Your Team: {{ user["team"] }}</p>
-    <p>team ID: {{ team_id }}</p>
-    <p><strong>First Year of Play:</strong> {{ teamDetail["firstYearOfPlay"] }}</p>
-    <p><strong>League:</strong> {{ teamDetail["league"] }}</p>
-    <p><strong>Active Status:</strong> {{ teamDetail["active"] }}</p>
-    <div class="actions">
-        <a href="{{ url_for('profile') }}">Edit Profile</a> | 
-        <a href="{{ url_for('logout') }}">Logout</a>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Pitcher Perfect ⚾</a>
+        <div class="ms-auto">
+            <a href="{{ url_for('profile') }}">Edit Profile</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Welcome Message -->
+    <div class="welcome">
+        Welcome, {{ user["name"] }}! ⚾🎉
     </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <a href="#team">Team Details 🏟️</a>
+        <a href="#stats">Statistics 📊</a>
+    </div>
+    <button class="toggle-btn" id="toggle-btn">></button>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Welcome, {{ user["name"] }}! ⚾</h1>
+        <p>Your Team: <strong>{{ user["team"] }} ⚾</strong></p>
+        <p>Team ID: <strong>{{ team_id }}</strong></p>
+
+        <!-- Gemini Feedback -->
+        <div id="markdown-output" class="markdown"></div>
+    </div>
+    
+    <div class="container">
+        <h1 class="my-4">Player Data Visualization</h1>
+
+        <!-- Grid layout for charts -->
+        <div class="row" id="chartContainer">
+            <!-- Dynamic charts will be injected here -->
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Fetch data and create charts
+        async function fetchDataAndCreateCharts() {
+            try {
+                const response = await fetch('/get_data');
+                const data = await response.json();
+
+                const battersData = data.batters;
+                const pitchersData = data.pitchers;
+
+                const chartContainer = document.getElementById('chartContainer');
+
+                // Generate charts
+                const battersMaxHitSpeedPlot = generatePlot(battersData, 'Batters', 'max_hit_speed');
+                const pitchersMaxHitSpeedPlot = generatePlot(pitchersData, 'Pitchers', 'max_hit_speed');
+
+                // Append charts to the grid
+                chartContainer.appendChild(battersMaxHitSpeedPlot);
+                chartContainer.appendChild(pitchersMaxHitSpeedPlot);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Call the function to fetch data and initialize charts on page load
+        window.onload = fetchDataAndCreateCharts;
+
+        // Function to generate the Plotly chart
+        function generatePlot(data, title, metric) {
+            const topPlayers = data.sort((a, b) => b[metric] - a[metric]).slice(0, 5);
+            const xData = topPlayers.map(player => player['last_name, first_name']);
+            const yData = topPlayers.map(player => player[metric]);
+
+            const trace = {
+                x: xData,
+                y: yData,
+                type: 'bar',
+                marker: { color: 'skyblue' }
+            };
+
+            const layout = {
+                title: `${title} - Top 5 by ${metric}`,
+                xaxis: { title: 'Player Name' },
+                yaxis: { title: metric },
+            };
+
+            const colDiv = document.createElement('div');
+            colDiv.classList.add('col-md-6'); // Adjust width based on screen size
+            colDiv.style.marginBottom = '20px';
+
+            const plotDiv = document.createElement('div');
+            colDiv.appendChild(plotDiv);
+
+            // Generate the plot
+            Plotly.newPlot(plotDiv, [trace], layout);
+
+            return colDiv;
+        }
+    </script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+    <script>
+        // Sidebar Toggle
+        const toggleBtn = document.getElementById('toggle-btn');
+        const sidebar = document.getElementById('sidebar');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            toggleBtn.textContent = sidebar.classList.contains('active') ? '<' : '>';
+        });
+
+        // Markdown Content
+        const feedbackGemini = `{{ feedbackgemini | safe }}`;
+
+        // Render Markdown
+        const md = window.markdownit();
+        const markdownOutput = document.getElementById('markdown-output');
+        markdownOutput.innerHTML = md.render(feedbackGemini);
+    </script>
 </body>
+
 </html>

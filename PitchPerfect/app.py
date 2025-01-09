@@ -1,10 +1,59 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify , flash
 import json
-from teamDetails import get_team_data
-
+from modules.teamDetails import get_team_data
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+import pandas as pd
+# Load environment variables
+load_dotenv()
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
+genai.configure(api_key=os.getenv("API_KEY"))
 
+defaultprompt = """you are the ai coach of baseball
+                    your main focus is on players stats , their mental state , team strategy , their coordination, and team win probability
+                    you have to make the analysis of real coach easier 
+                    you have to help the players mentally and physically ( by guiding)
+                    you have to give ideas to coach on building the most effiect team lineup ( means arrange ment of players ) against the opponent team player
+                    you will provided my the teams details , player details and rest you have to anaylse , like for team the current active players list would be given and some of the past matches insights and now u have to predict the win/lose percentange of them based on it 
+                    your name is pitcherperfect ai , made by team surya prabha , with the help of gemini and mlb stats 
+                    you have to suggest and give the insights to coach about the who can be the new best player who can be kept in team from the minor leage team 
+                    your tone must be friendly and like a guide , u may sometime have to guide also to coach , fan , player , mentally and also by sports pont of view 
+                    You are a professional, highly skilled mental doctor, and health guide.
+                    You act as a best friend to those who talk to you , but you have to talk based on their mental health , by seeing his age intrests qualities , if you dont know ask him indirectly by asking his/her studing or any work doing currently. 
+                    You can assess if someone is under mental stress by judging their communication.
+                    you are a ai coach but if is in mental instability then you have to help him 
+                    you are unisex ( pretend to one who like the one )
+"""
+
+#prompt = "This is my assessment of close-ended questions and open-ended questions, so you have to talk to me accordingly."
+
+# Create the model
+generation_config = {
+    "temperature": 2,
+    "top_p": 0.95,
+    "top_k": 64,
+    "max_output_tokens": 8192,
+    "response_mime_type": "text/plain",
+}
+
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-pro",
+    generation_config=generation_config,
+    system_instruction=defaultprompt + " " 
+)
+
+def gemini_chat(user_input):
+    try:
+        # Send the user input to the model
+        response = chat_session.send_message(user_input)
+        return response.text
+    except Exception as e:
+        print(f"Error during chat: {e}")
+        return "An error occurred. Please try again."
+    
+chat_session = model.start_chat()
 # Simulated MLB team data
 teams = {
     "American League": {
@@ -102,10 +151,56 @@ def home():
                 break
 
         teamDetail = get_team_data(team_id) if team_id else None
+       
+        if teamDetail:
+                GeminiDetails = gemini_chat(
+        f"Give a brief about the team {teamDetail['name']} ({teamDetail['league']}) established in {teamDetail['first_year']}. Include performance and emojis. dont introduce about you there only the content"
+                 )
+        else:
+             GeminiDetails = "Team details are not available."
 
-        return render_template("home.html", user=user, teams=teams, team_id=team_id, teamDetail=teamDetail)
+        return render_template("home.html", user=user, teams=teams, team_id=team_id, teamDetail=teamDetail , feedbackgemini = GeminiDetails )
 
     return redirect(url_for("login"))
+
+
+@app.route("/get_data")
+def get_data():
+    # Check if the user is logged in and has a team
+    if "user" not in session:
+        return jsonify({"error": "User not logged in"}), 401
+
+    user = session["user"]
+    team_name = user.get("team")
+    team_id = None
+
+    # Find the team ID by iterating through the teams dictionary
+    for league, divisions in teams.items():
+        for division, teams_list in divisions.items():
+            for team in teams_list:
+                if team["name"] == team_name:
+                    team_id = team["id"]
+                    break
+            if team_id:
+                break
+        if team_id:
+            break
+
+    if not team_id:
+        return jsonify({"error": "Team ID not found"}), 404
+
+    # Dynamically load CSV data based on team_id
+    try:
+        batters_csv = pd.read_csv(f'dataset/2024/batters/{team_id}.csv')
+        pitchers_csv = pd.read_csv(f'dataset/2024/pitchers/{team_id}.csv')
+    except FileNotFoundError:
+        return jsonify({"error": "CSV files not found for the team"}), 404
+
+    # Convert DataFrame to JSON-serializable dictionaries
+    batters_data = batters_csv.to_dict(orient='records')
+    pitchers_data = pitchers_csv.to_dict(orient='records')
+
+    return jsonify({"batters": batters_data, "pitchers": pitchers_data})
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -167,6 +262,8 @@ def profile():
 def logout():
     session.pop("user", None)
     return redirect(url_for("login"))
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
