@@ -23,6 +23,7 @@
 <body>
     <h1>Update Profile</h1>
     <form method="post">
+        <!-- Select Field to Update -->
         <label for="update_field">Select the field to update:</label>
         <select id="update_field" name="update_field" required onchange="toggleInputField()">
             <option value="" disabled selected>Select field</option>
@@ -33,25 +34,29 @@
             <option value="team">Team</option>
         </select>
 
+        <!-- Input for New Value -->
         <div id="new_value_input" style="margin-top: 10px;">
             <label for="new_value">Enter new value:</label>
             <input type="text" id="new_value" name="new_value" placeholder="Enter new value">
         </div>
 
-        <select id="new_value_team" name="new_value">
-            {% for league, divisions in teams.items() %}
-                <optgroup label="{{ league }}">
-                    {% for division, team_list in divisions.items() %}
-                        {% for team in team_list %}
-                            <option value="{{ team.name }}" {% if team.name == user.team %}selected{% endif %}>
-                                {{ team.name }}
-                            </option>
+        <!-- Dropdown for Team Selection -->
+        <div id="team_dropdown" style="display: none; margin-top: 10px;">
+            <label for="new_value_team">Select a team:</label>
+            <select id="new_value_team" name="new_value_team">
+                {% for league, divisions in teams.items() %}
+                    <optgroup label="{{ league }}">
+                        {% for division, team_list in divisions.items() %}
+                            {% for team in team_list %}
+                                <option value="{{ team.name }}" {% if team.name == user.team %}selected{% endif %}>
+                                    {{ team.name }}
+                                </option>
+                            {% endfor %}
                         {% endfor %}
                     {% endfor %}
                 </optgroup>
-            {% endfor %}
-        </select>
-        
+            </select>
+        </div>
 
         <button type="submit" style="margin-top: 20px;">Update</button>
     </form>
