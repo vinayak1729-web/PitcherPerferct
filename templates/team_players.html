@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Players</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        display: flex;
+    }
+
+
+    .wrapper {
+        display: flex;
+        flex: 1;
+    }
+
+    .sidebar {
+        width: 250px;
+        padding: 15px;
+        background-color: #f4f4f4;
+        border-right: 1px solid #ddd;
+        overflow-y: auto;
+        position: fixed;
+    }
+
+    .home-sidebar {
+        left: 0;
+        height: 100%;
+    }
+
+    .filter-sidebar {
+        right: 0;
+        height: 100%;
+        background-color: #eaeaea;
+        border-left: 1px solid #ddd;
+    }
+
+    .content {
+        margin: 0 270px;
+        /* Width of both sidebars plus padding */
+        padding: 20px;
+        flex-grow: 1;
+    }
+
+    .team-logo {
+        width: 100%;
+        max-width: 200px;
+        display: block;
+        margin: 0 auto 15px;
+    }
+
+    .toggle-btn {
+        position: fixed;
+        top: 10px;
+        padding: 5px 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    #homeToggleBtn {
+        left: 250px;
+        /* Same as home-sidebar width */
+    }
+
+    #filterToggleBtn {
+        right: 250px;
+        /* Same as filter-sidebar width */
+    }
+
+    .team-logo {
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 20px;
+    }
+
+    .player-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .player-card {
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .player-card img {
+        width: 100px;
+        height: auto;
+        border-radius: 50%;
+    }
+
+    button {
+        background: #61dafb;
+        color: #000;
+        font-weight: bold;
+        cursor: pointer;
+    }
+</style>
+
+<body>
+    <div class="wrapper">
+        <!-- Home Sidebar -->
+        <div class="sidebar home-sidebar" id="homeSidebar">
+            <a class="navbar-brand" href="#">Pitcher Perfect ⚾</a>
+            <a href="{{ url_for('home') }}">Team Details 🏟️</a>
+            <a href="{{ url_for('team_players') }}">Team Players</a>
+            <a href="#">Team Comparison</a>
+            <a href="#">Minor League Players</a>
+            <a href="#">Strategies</a>
+        </div>
+        <button class="toggle-btn left-toggle" id="homeToggleBtn">></button>
+        <!-- Filter Sidebar -->
+        <div class="sidebar filter-sidebar" id="filterSidebar">
+            <img src="{{ team_logo }}" alt="Team Logo" class="team-logo">
+            <h3>Filters</h3>
+            <form method="GET" action="{{ url_for('team_players') }}">
+                <!-- Team Name Filter -->
+                <label for="team">Team Name:</label>
+                <select name="team_id" id="team">
+                    {% for league, divisions in team_mapping.items() %}
+                    {% for division, teams in divisions.items() %}
+                    <optgroup label="{{ league }} - {{ division }}">
+                        {% for team in teams %}
+                        <option value="{{ team.id }}" {% if team.id==selected_team %}selected{% endif %}>
+                            {{ team.name }}
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endfor %}
+                    {% endfor %}
+                </select>
+
+                <!-- Status Filter -->
+                <label for="status">Status:</label>
+                <select name="status" id="status">
+                    <option value="All" {% if selected_status=='All' %}selected{% endif %}>All</option>
+                    <option value="Active" {% if selected_status=='Active' %}selected{% endif %}>Active</option>
+                    <option value="Minor League" {% if selected_status=='Minor League' %}selected{% endif %}>Minor
+                        League</option>
+                    <option value="Traded" {% if selected_status=='Traded' %}selected{% endif %}>Traded</option>
+                </select>
+
+                <!-- Role Filter -->
+                <label for="role">Role:</label>
+                <!-- Role Filter -->
+                <label><input type="checkbox" name="roles" value="Pitcher" {% if 'Pitcher' in selected_roles %}checked{%
+                        endif %}> Pitcher</label><br>
+                <label><input type="checkbox" name="roles" value="Catcher" {% if 'Catcher' in selected_roles %}checked{%
+                        endif %}> Catcher</label><br>
+                <label><input type="checkbox" name="roles" value="First Baseman" {% if 'First Baseman' in selected_roles
+                        %}checked{% endif %}> First Baseman</label><br>
+                <label><input type="checkbox" name="roles" value="Second Baseman" {% if 'Second Baseman' in
+                        selected_roles %}checked{% endif %}> Second Baseman</label><br>
+                <label><input type="checkbox" name="roles" value="Third Baseman" {% if 'Third Baseman' in selected_roles
+                        %}checked{% endif %}> Third Baseman</label><br>
+                <label><input type="checkbox" name="roles" value="Shortstop" {% if 'Shortstop' in selected_roles
+                        %}checked{% endif %}> Shortstop</label><br>
+                <label><input type="checkbox" name="roles" value="Two-Way Player" {% if 'Two-Way Player' in
+                        selected_roles %}checked{% endif %}> Two-Way Player</label><br>
+                <label><input type="checkbox" name="roles" value="Outfielder" {% if 'Outfielder' in selected_roles
+                        %}checked{% endif %}> Outfielder</label><br>
+                <label><input type="checkbox" name="roles" value="Left Fielder" {% if 'Left Fielder' in selected_roles
+                        %}checked{% endif %}> Left Fielder</label><br>
+                <label><input type="checkbox" name="roles" value="Center Fielder" {% if 'Center Fielder' in
+                        selected_roles %}checked{% endif %}> Center Fielder</label><br>
+                <label><input type="checkbox" name="roles" value="Right Fielder" {% if 'Right Fielder' in selected_roles
+                        %}checked{% endif %}> Right Fielder</label><br>
+                <label><input type="checkbox" name="roles" value="Designated Hitter" {% if 'Designated Hitter' in
+                        selected_roles %}checked{% endif %}> Designated Hitter</label><br>
+                <label><input type="checkbox" name="roles" value="Pinch Hitter" {% if 'Pinch Hitter' in selected_roles
+                        %}checked{% endif %}> Pinch Hitter</label><br>
+                <label><input type="checkbox" name="roles" value="Pinch Runner" {% if 'Pinch Runner' in selected_roles
+                        %}checked{% endif %}> Pinch Runner</label><br>
+                <label><input type="checkbox" name="roles" value="Relief Pitcher" {% if 'Relief Pitcher' in
+                        selected_roles %}checked{% endif %}> Relief Pitcher</label><br>
+                <!-- Submit Button -->
+                <button type="submit">Apply Filters</button>
+            </form>
+        </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>Team Players</h1>
+            <div class="player-list">
+                {% for player in players %}
+                <div class="player-card">
+                    <img src="{{ player.headshot_url }}" alt="{{ player.name }}" class="player-image">
+                    <h3>{{ player.name }}</h3>
+                    <p>Jersey Number: {{ player.jersey_number }}</p>
+                    <p>Position: {{ player.position }} ({{ player.type }})</p>
+                    <p>Status: {{ player.status }}</p>
+                    <p>Height: {{ player.height }} | Weight: {{ player.weight }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    // Select sidebars and toggle buttons
+    const homeSidebar = document.getElementById("homeSidebar");
+    const filterSidebar = document.getElementById("filterSidebar");
+    const homeToggleBtn = document.getElementById("homeToggleBtn");
+    const filterToggleBtn = document.createElement("button");
+
+    // Initialize and style the filter toggle button
+    filterToggleBtn.id = "filterToggleBtn";
+    filterToggleBtn.classList.add("toggle-btn", "right-toggle");
+    filterToggleBtn.innerText = "<";
+    document.body.appendChild(filterToggleBtn);
+
+    // Function to toggle the Home Sidebar
+    homeToggleBtn.addEventListener("click", () => {
+        if (homeSidebar.style.display === "none") {
+            homeSidebar.style.display = "block";
+            homeToggleBtn.innerText = ">";
+        } else {
+            homeSidebar.style.display = "none";
+            homeToggleBtn.innerText = "<";
+        }
+    });
+
+    // Function to toggle the Filter Sidebar
+    filterToggleBtn.addEventListener("click", () => {
+        if (filterSidebar.style.display === "none") {
+            filterSidebar.style.display = "block";
+            filterToggleBtn.innerText = "<";
+        } else {
+            filterSidebar.style.display = "none";
+            filterToggleBtn.innerText = ">";
+        }
+    });
+
+    // Initialize sidebars as visible
+    homeSidebar.style.display = "block";
+    filterSidebar.style.display = "block";
+
+    // Set button positions based on initial visibility
+    homeToggleBtn.style.left = `${homeSidebar.offsetWidth}px`;
+    filterToggleBtn.style.right = `${filterSidebar.offsetWidth}px`;
+
+    // Update button positions when resizing the window
+    window.addEventListener("resize", () => {
+        homeToggleBtn.style.left = `${homeSidebar.offsetWidth}px`;
+        filterToggleBtn.style.right = `${filterSidebar.offsetWidth}px`;
+    });
+</script>

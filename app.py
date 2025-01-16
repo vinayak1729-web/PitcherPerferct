@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 import json
 from modules.teamDetails import get_team_data
 import google.generativeai as genai
+import csv
 import os
 import requests
 from concurrent.futures import ThreadPoolExecutor
@@ -9,6 +10,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import sqlite3
 from functools import lru_cache
+
 # Load environment variables
 load_dotenv()
 app = Flask(__name__)
@@ -247,6 +249,8 @@ def read_team_data(team_id):
     pitchers_data = pitchers_csv.to_dict(orient='records')
 
     return batters_data, pitchers_data
+
+
 @app.route("/get_data" ,methods=["GET", "POST"])
 def get_data():
     team_id = request.args.get('team_id')  # Get team_id from the query parameter
@@ -303,36 +307,58 @@ def chatbot():
         team_name = user.get("team")
         team_id = find_team_id_by_name(team_name, teams)
 
-        # Fetch batters and pitchers data
-        batters_data, pitchers_data = read_team_data(team_id)
+        # Fetch team roster
+        roster_url = f"https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season=2024"
+        roster_response = requests.get(roster_url)
+        roster = roster_response.json().get("roster", [])
 
-        # Format additional context for the chatbot
-        context = (
-            f"Here are the details for the team's batters and pitchers:\n"
-            f"Batters Data: {batters_data}\n"
-            f"Pitchers Data: {pitchers_data}\n\n"
+        # Separate batters and pitchers
+        batters = []
+        pitchers = []
+        for player in roster:
+            player_details = fetch_player_details(player)
+            if player_details["position"] in ["Pitcher"]:
+                pitchers.append(player_details)
+            else:
+                batters.append(player_details)
+
+        # Format the roster data for chatbot context
+        batters_data = "\n".join(
+            [f"{b['name']} - {b['position']}, Status: {b['status']}" for b in batters]
         )
-        
-        # Append the user input with the team-specific context
-        chatbot_prompt = context + user_input + " You have to talk to the coach with this data.any analysis he asks you have to do , any comparision with any team you have to do"
+        pitchers_data = "\n".join(
+            [f"{p['name']} - {p['position']}, Status: {p['status']}" for p in pitchers]
+        )
 
-        # Generate Gemini response
+        # Context for the chatbot
+        context = (
+            f"Here are the details for {team_name}'s players:\n\n "
+            f"Batters:\n{batters_data}\n\n"
+            f"Pitchers:\n{pitchers_data}\n\n"
+            "You are the assistant coach. Provide strategies, analyze performance, "
+            "and offer comparisons based on the above data. "
+        )
+
+        # Append the user input to the context
+        chatbot_prompt = context + user_input
+
+        # Generate response using Gemini API
         gemini_response = gemini_chat(chatbot_prompt)
 
         return jsonify({"response": gemini_response})
-    
+
     # If no user in session, return an error message
     return jsonify({"response": "No team data available. Please log in."}), 400
 
-def get_team_id():
-     if "user" in session:
-        user = session["user"]
-        team_name = user.get("team")
+# def get_team_id():
+#      if "user" in session:
+#         user = session["user"]
+#         team_name = user.get("team")
         
-        # Get the team ID
-        team_id = find_team_id_by_name(team_name, teams)
+#         # Get the team ID
+#         team_id = find_team_id_by_name(team_name, teams)
 
-        return team_id 
+#         return team_id 
      
 team_roster_url = "https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season=2024"
 player_details_url = "https://statsapi.mlb.com/api/v1/people/{player_id}"
@@ -352,6 +378,7 @@ def fetch_player_details(player):
     headshot_url = f'https://securea.mlb.com/mlb/images/players/head_shot/{player_id}.jpg'
     
     return {
+        "id":player_id,
         "name": player_name,
         "position": player_position,
         "status": player_status,
@@ -365,24 +392,98 @@ def fetch_player_details(player):
         "headshot_url": headshot_url
     }
 
-@app.route('/team_players')
-def team_PLayers():
-    team_id = get_team_id()
+# @app.route('/team_players')
+# def team_PLayers():
+#     team_id = get_team_id()
+#     # Fetch the team roster
+#     response = requests.get(team_roster_url.format(team_id=team_id))
+#     roster_data = response.json()
+
+#     # Use ThreadPoolExecutor to fetch player details concurrently
+#     with ThreadPoolExecutor() as executor:
+#         players_info = list(executor.map(fetch_player_details, roster_data["roster"]))
+
+#     # Categorize players
+#     active_players = [p for p in players_info if p["status"] == "Active"]
+#     minor_league_players = [p for p in players_info if "Minor League" in p["status"]]
+#     traded_players = [p for p in players_info if "Traded" in p["status"]]
+
+#     # Render the template with player data
+#     return render_template('team_players.html', active_players=active_players, minor_league_players=minor_league_players, traded_players=traded_players)
+
+# Load team mapping
+with open('dataset/team.json', 'r') as f:
+    team_mapping = json.load(f)
+
+def get_team_logo(team_id):
+    return f'https://www.mlbstatic.com/team-logos/{team_id}.svg'
+
+@app.route('/team_players', methods=['GET', 'POST'])
+def team_players():
+    team_id = request.args.get('team_id') or session.get('team_id')
+    if not team_id:
+        team_id = 119  # Default to Dodgers
+
+    session['team_id'] = team_id
+
+    status_filter = request.args.get('status', 'All')
+    role_filters = request.args.getlist('roles')  # Get multiple roles
+
     # Fetch the team roster
-    response = requests.get(team_roster_url.format(team_id=team_id))
+    team_roster_url = f"https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season=2024"
+    response = requests.get(team_roster_url)
     roster_data = response.json()
 
-    # Use ThreadPoolExecutor to fetch player details concurrently
+    # Fetch player details concurrently
+    def fetch_player_details(player):
+        player_id = player["person"]["id"]
+        player_name = player["person"]["fullName"]
+        player_position = player["position"]["name"]
+        player_status = player["status"]["description"]
+        player_jersey = player.get("jerseyNumber", "N/A")  # Jersey number may not always exist
+        player_response = requests.get(f"https://statsapi.mlb.com/api/v1/people/{player_id}")
+        player_details = player_response.json()["people"][0]
+        return {
+            "id": player_id,
+            "name": player_name,
+            "position": player_position,
+            "type": player["position"].get("type", "N/A"),  # Position type
+            "status": player_status,
+            "jersey_number": player_jersey,
+            "dob": player_details["birthDate"],
+            "height": player_details["height"],
+            "weight": player_details["weight"],
+            "batside": player_details["batSide"]["description"],
+            "pitchside": player_details["pitchHand"]["description"],
+            "strike_zone_top": player_details.get("strikeZoneTop", "N/A"),
+            "strike_zone_bottom": player_details.get("strikeZoneBottom", "N/A"),
+            "headshot_url": f'https://securea.mlb.com/mlb/images/players/head_shot/{player_id}.jpg'
+        }
+
     with ThreadPoolExecutor() as executor:
         players_info = list(executor.map(fetch_player_details, roster_data["roster"]))
 
-    # Categorize players
-    active_players = [p for p in players_info if p["status"] == "Active"]
-    minor_league_players = [p for p in players_info if "Minor League" in p["status"]]
-    traded_players = [p for p in players_info if "Traded" in p["status"]]
+    # Filter players
+    if status_filter != 'All':
+        players_info = [p for p in players_info if p["status"] == status_filter]
+    if role_filters:
+        players_info = [p for p in players_info if p["position"] in role_filters]
 
-    # Render the template with player data
-    return render_template('team_players.html', active_players=active_players, minor_league_players=minor_league_players, traded_players=traded_players)
+    team_logo = get_team_logo(team_id)
+
+    return render_template(
+        'team_players.html',
+        players=players_info,
+        team_logo=team_logo,
+        team_mapping=team_mapping,
+        selected_team=int(team_id),
+        selected_status=status_filter,
+        selected_roles=role_filters
+    )
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 
 @app.route("/signup", methods=["GET", "POST"])
