@@ -114,6 +114,142 @@
         font-weight: bold;
         cursor: pointer;
     }
+
+    /* Player Card Styles */
+    .player-card {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .player-card.selected {
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        transform: scale(1.02);
+    }
+
+    .selection-overlay {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+    }
+
+    .player-select {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    /* Selected Players Bar */
+    .selected-players-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        z-index: 1000;
+    }
+
+    .selected-players-container {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .selected-player-thumbnail {
+        position: relative;
+        flex-shrink: 0;
+        width: 60px;
+        text-align: center;
+    }
+
+    .selected-player-thumbnail img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .selected-player-thumbnail p {
+        font-size: 0.8em;
+        margin-top: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .selection-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    /* Crystal Effect for Selected Players */
+    .player-card.selected::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(45deg,
+                rgba(0, 255, 0, 0.1),
+                rgba(0, 255, 0, 0.2));
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    /* Buttons */
+    #saveTeamBtn,
+    #viewTeamBtn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    #saveTeamBtn {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    #saveTeamBtn:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    #viewTeamBtn {
+        background-color: #2196F3;
+        color: white;
+        margin-left: 10px;
+    }
+
+    /* Success Message */
+    .success-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #4CAF50;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s ease-out;
+        z-index: 1001;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
 </style>
 
 <body>
@@ -177,31 +313,18 @@
                 <label><input type="checkbox" name="roles" value="Two-Way Player" {% if 'Two-Way Player' in
                         selected_roles %}checked{% endif %}> Two-Way Player</label><br>
                 <label><input type="checkbox" name="roles" value="Outfielder" {% if 'Outfielder' in selected_roles
-                        %}checked{% endif %}> Outfielder</label><br>
-                <label><input type="checkbox" name="roles" value="Left Fielder" {% if 'Left Fielder' in selected_roles
-                        %}checked{% endif %}> Left Fielder</label><br>
-                <label><input type="checkbox" name="roles" value="Center Fielder" {% if 'Center Fielder' in
-                        selected_roles %}checked{% endif %}> Center Fielder</label><br>
-                <label><input type="checkbox" name="roles" value="Right Fielder" {% if 'Right Fielder' in selected_roles
-                        %}checked{% endif %}> Right Fielder</label><br>
-                <label><input type="checkbox" name="roles" value="Designated Hitter" {% if 'Designated Hitter' in
-                        selected_roles %}checked{% endif %}> Designated Hitter</label><br>
-                <label><input type="checkbox" name="roles" value="Pinch Hitter" {% if 'Pinch Hitter' in selected_roles
-                        %}checked{% endif %}> Pinch Hitter</label><br>
-                <label><input type="checkbox" name="roles" value="Pinch Runner" {% if 'Pinch Runner' in selected_roles
-                        %}checked{% endif %}> Pinch Runner</label><br>
-                <label><input type="checkbox" name="roles" value="Relief Pitcher" {% if 'Relief Pitcher' in
-                        selected_roles %}checked{% endif %}> Relief Pitcher</label><br>
-                <!-- Submit Button -->
+                        %}checked{% endif %}> Outfielder</label><br>           
                 <button type="submit">Apply Filters</button>
             </form>
         </div>
-        <!-- Main Content -->
         <div class="main-content">
             <h1>Team Players</h1>
             <div class="player-list">
                 {% for player in players %}
-                <div class="player-card">
+                <div class="player-card" data-player='{{ player|tojson|safe }}'>
+                    <div class="selection-overlay">
+                        <input type="checkbox" class="player-select" />
+                    </div>
                     <img src="{{ player.headshot_url }}" alt="{{ player.name }}" class="player-image">
                     <h3>{{ player.name }}</h3>
                     <p>Jersey Number: {{ player.jersey_number }}</p>
@@ -211,55 +334,108 @@
                 </div>
                 {% endfor %}
             </div>
+
+            <!-- Selected Players Bar -->
+            <div class="selected-players-bar">
+                <div class="selected-players-container">
+                    <!-- Selected players will be displayed here -->
+                </div>
+                <div class="selection-controls">
+                    <span class="player-count">Selected: <span id="selectedCount">0</span>/26</span>
+                    <button id="saveTeamBtn" disabled>Save Team</button>
+                    <button id="viewTeamBtn">View Team</button>
+                </div>
+            </div>
         </div>
+    </div>
     </div>
 </body>
 <script>
-    // Select sidebars and toggle buttons
-    const homeSidebar = document.getElementById("homeSidebar");
-    const filterSidebar = document.getElementById("filterSidebar");
-    const homeToggleBtn = document.getElementById("homeToggleBtn");
-    const filterToggleBtn = document.createElement("button");
-
-    // Initialize and style the filter toggle button
-    filterToggleBtn.id = "filterToggleBtn";
-    filterToggleBtn.classList.add("toggle-btn", "right-toggle");
-    filterToggleBtn.innerText = "<";
-    document.body.appendChild(filterToggleBtn);
-
-    // Function to toggle the Home Sidebar
-    homeToggleBtn.addEventListener("click", () => {
-        if (homeSidebar.style.display === "none") {
-            homeSidebar.style.display = "block";
-            homeToggleBtn.innerText = ">";
-        } else {
-            homeSidebar.style.display = "none";
-            homeToggleBtn.innerText = "<";
+    document.addEventListener('DOMContentLoaded', function() {
+    const selectedPlayers = new Set();
+    const maxPlayers = 26;
+    
+    // Elements
+    const playerCards = document.querySelectorAll('.player-card');
+    const selectedPlayersContainer = document.querySelector('.selected-players-container');
+    const saveTeamBtn = document.getElementById('saveTeamBtn');
+    const viewTeamBtn = document.getElementById('viewTeamBtn');
+    const selectedCountEl = document.getElementById('selectedCount');
+    
+    function updateSelectedPlayersBar() {
+        selectedPlayersContainer.innerHTML = '';
+        selectedPlayers.forEach(player => {
+            const thumbnail = document.createElement('div');
+            thumbnail.className = 'selected-player-thumbnail';
+            thumbnail.innerHTML = `
+                <img src="${player.headshot_url}" alt="${player.name}">
+                <p>${player.name}</p>
+            `;
+            selectedPlayersContainer.appendChild(thumbnail);
+        });
+        
+        selectedCountEl.textContent = selectedPlayers.size;
+        saveTeamBtn.disabled = selectedPlayers.size !== maxPlayers;
+    }
+    
+    function showSuccessMessage(message) {
+        const messageEl = document.createElement('div');
+        messageEl.className = 'success-message';
+        messageEl.textContent = message;
+        document.body.appendChild(messageEl);
+        
+        setTimeout(() => {
+            messageEl.remove();
+        }, 3000);
+    }
+    
+    // Add click handlers to player cards
+    playerCards.forEach(card => {
+        const checkbox = card.querySelector('.player-select');
+        const playerData = JSON.parse(card.dataset.player);
+        
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                if (selectedPlayers.size >= maxPlayers) {
+                    e.target.checked = false;
+                    alert(`You can only select up to ${maxPlayers} players`);
+                    return;
+                }
+                selectedPlayers.add(playerData);
+                card.classList.add('selected');
+            } else {
+                selectedPlayers.delete(playerData);
+                card.classList.remove('selected');
+            }
+            updateSelectedPlayersBar();
+        });
+    });
+    
+    // Save team handler
+    saveTeamBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/save_selected_team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    players: Array.from(selectedPlayers)
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showSuccessMessage(data.message);
+            }
+        } catch (error) {
+            console.error('Error saving team:', error);
         }
     });
-
-    // Function to toggle the Filter Sidebar
-    filterToggleBtn.addEventListener("click", () => {
-        if (filterSidebar.style.display === "none") {
-            filterSidebar.style.display = "block";
-            filterToggleBtn.innerText = "<";
-        } else {
-            filterSidebar.style.display = "none";
-            filterToggleBtn.innerText = ">";
-        }
+    
+    // View team handler
+    viewTeamBtn.addEventListener('click', () => {
+        window.location.href = '/view_selected_team';
     });
-
-    // Initialize sidebars as visible
-    homeSidebar.style.display = "block";
-    filterSidebar.style.display = "block";
-
-    // Set button positions based on initial visibility
-    homeToggleBtn.style.left = `${homeSidebar.offsetWidth}px`;
-    filterToggleBtn.style.right = `${filterSidebar.offsetWidth}px`;
-
-    // Update button positions when resizing the window
-    window.addEventListener("resize", () => {
-        homeToggleBtn.style.left = `${homeSidebar.offsetWidth}px`;
-        filterToggleBtn.style.right = `${filterSidebar.offsetWidth}px`;
-    });
+});
 </script>

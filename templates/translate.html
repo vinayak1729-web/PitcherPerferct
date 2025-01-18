@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Translation App</title>
+</head>
+<body>
+    <h1>Flask Translation App</h1>
+    <p><strong>Original Text:</strong></p>
+    <p>{{ demo_text }}</p>
+
+    <form method="POST">
+        <p><strong>Select Language:</strong></p>
+        {% for code, language in languages.items() %}
+            <label>
+                <input type="radio" name="language" value="{{ code }}" 
+                       {% if selected_language == code %}checked{% endif %}>
+                {{ language }}
+            </label><br>
+        {% endfor %}
+        <br>
+        <button type="submit">Translate</button>
+    </form>
+
+    <h2>Translated Text:</h2>
+    <p>{{ translated_text }}</p>
+</body>
+</html>

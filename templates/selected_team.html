@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    
+    {% block content %}
+    <div class="selected-team-page">
+        <h1>Selected Team Roster</h1>
+        <div class="player-list">
+            {% for player in players %}
+            <div class="player-card">
+                <img src="{{ player.headshot_url }}" alt="{{ player.name }}" class="player-image">
+                <h3>{{ player.name }}</h3>
+                <p>Jersey Number: {{ player.jersey_number }}</p>
+                <p>Position: {{ player.position }}</p>
+                <p>Status: {{ player.status }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('team_players') }}" class="back-button">Back to Selection</a>
+    </div>
+    {% endblock %}
+
+</body>
+
+</html>

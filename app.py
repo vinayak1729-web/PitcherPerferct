@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify , flash
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify , flash , g
 import json
 from modules.teamDetails import get_team_data
 import google.generativeai as genai
@@ -111,67 +111,94 @@ teams = {
     },
 }
 
-app = Flask(__name__)
-app.secret_key = "your_secret_key"
+json_file = "database/db.json"
 
-db_file = "database/db.sqlite"
+# Function to initialize the JSON file if it doesn't exist
+def initialize_json():
+    try:
+        with open(json_file, 'r') as file:
+            pass  # File exists, nothing to do
+    except FileNotFoundError:
+        # Initialize with an empty list if the file does not exist
+        with open(json_file, 'w') as file:
+            json.dump([], file)
 
-# Initialize SQLite database
-conn = sqlite3.connect(db_file)
-cursor = conn.cursor()
+# Call the function to initialize the JSON file
+initialize_json()
 
-# Create users table if not exists
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    role TEXT,
-    team TEXT
-)
-''')
-conn.commit()
-conn.close()
+def generate_user_id():
+    # Load existing data from the JSON file
+    with open(json_file, 'r') as file:
+        users = json.load(file)
 
-# Helper functions
-def save_user(user_data):
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO users (name, email, password, role, team)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (user_data["name"], user_data["email"], user_data["password"], user_data["role"], user_data.get("team")))
-    conn.commit()
-    conn.close()
+    # If there are no users, start from 001729
+    if not users:
+        return "001729"
+
+    # Get the last user ID, increment it by 1 and format it
+    last_user_id = users[-1]["user_id"]
+    new_user_id = str(int(last_user_id) + 1).zfill(6)  # Increment and pad with zeros
+    return new_user_id
+
+def save_user(user):
+    # Generate a new user ID
+    user_id = generate_user_id()
+
+    # Load existing data from the JSON file
+    with open(json_file, 'r') as file:
+        users = json.load(file)
+
+    # Append the new user with the generated user ID
+    users.append({
+        "user_id": user_id,
+        "name": user['name'],
+        "email": user['email'],
+        "password": user['password'],
+        "role": user['role'],
+        "team": user['team'],
+        "age": user.get('age', None),
+        "selected_players": user.get('selected_players', None)
+    })
+
+    # Save the updated list back to the JSON file
+    with open(json_file, 'w') as file:
+        json.dump(users, file, indent=4)
 
 def get_user(email):
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
-    user = cursor.fetchone()
-    conn.close()
-    if user:
-        return {
-            "id": user[0],
-            "name": user[1],
-            "email": user[2],
-            "password": user[3],
-            "role": user[4],
-            "team": user[5]
-        }
+    # Load existing data from the JSON file
+    with open(json_file, 'r') as file:
+        users = json.load(file)
+
+    # Find the user by email
+    for user in users:
+        if user['email'] == email:
+            return user
     return None
 
 def update_user(user):
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('''
-        UPDATE users
-        SET name = ?, password = ?, team = ?
-        WHERE email = ?
-    ''', (user["name"], user["password"], user["team"], user["email"]))
-    conn.commit()
-    conn.close()
+    # Load existing data from the JSON file
+    with open(json_file, 'r') as file:
+        users = json.load(file)
+
+    # Find and update the user by email
+    for idx, existing_user in enumerate(users):
+        if existing_user['email'] == user['email']:
+            users[idx] = {
+                "user_id": existing_user["user_id"],  # Keep the original user_id
+                "name": user["name"],
+                "email": user["email"],
+                "password": user["password"],
+                "role": user["role"],
+                "team": user["team"],
+                "age": user.get("age", None),
+                "selected_players": user.get("selected_players", None)
+            }
+            break
+
+    # Save the updated list back to the JSON file
+    with open(json_file, 'w') as file:
+        json.dump(users, file, indent=4)
+
 
 def find_team_id_by_name(team_name, teams):
     """Utility function to find team ID by name."""
@@ -350,16 +377,6 @@ def chatbot():
     # If no user in session, return an error message
     return jsonify({"response": "No team data available. Please log in."}), 400
 
-# def get_team_id():
-#      if "user" in session:
-#         user = session["user"]
-#         team_name = user.get("team")
-        
-#         # Get the team ID
-#         team_id = find_team_id_by_name(team_name, teams)
-
-#         return team_id 
-     
 team_roster_url = "https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season=2024"
 player_details_url = "https://statsapi.mlb.com/api/v1/people/{player_id}"
 
@@ -391,25 +408,6 @@ def fetch_player_details(player):
         "strike_zone_bottom": player_details["strikeZoneBottom"],
         "headshot_url": headshot_url
     }
-
-# @app.route('/team_players')
-# def team_PLayers():
-#     team_id = get_team_id()
-#     # Fetch the team roster
-#     response = requests.get(team_roster_url.format(team_id=team_id))
-#     roster_data = response.json()
-
-#     # Use ThreadPoolExecutor to fetch player details concurrently
-#     with ThreadPoolExecutor() as executor:
-#         players_info = list(executor.map(fetch_player_details, roster_data["roster"]))
-
-#     # Categorize players
-#     active_players = [p for p in players_info if p["status"] == "Active"]
-#     minor_league_players = [p for p in players_info if "Minor League" in p["status"]]
-#     traded_players = [p for p in players_info if "Traded" in p["status"]]
-
-#     # Render the template with player data
-#     return render_template('team_players.html', active_players=active_players, minor_league_players=minor_league_players, traded_players=traded_players)
 
 # Load team mapping
 with open('dataset/team.json', 'r') as f:
@@ -481,28 +479,46 @@ def team_players():
         selected_roles=role_filters
     )
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.route('/save_selected_team', methods=['POST'])
+def save_selected_team():
+    selected_players = request.json.get('players', [])
+    # Store in session or database
+    session['selected_team'] = selected_players
+    return jsonify({'success': True, 'message': 'Team saved successfully!'})
+
+# Add route to view selected team
+@app.route('/view_selected_team')
+def view_selected_team():
+    selected_team = session.get('selected_team', [])
+    return render_template('selected_team.html', players=selected_team)
 
 
-
-@app.route("/signup", methods=["GET", "POST"])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        password = request.form["password"]
-        role = request.form["role"]
-        team = request.form.get("team")
+    if request.method == 'POST':
+        # Get form data
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        age = request.form['age']
+        role = request.form['role']
+        team = request.form['team']
 
-        if get_user(email):
-            return "User already exists!"
+        # Save the user data to JSON
+        user = {
+            "name": name,
+            "email": email,
+            "password": password,
+            "role": role,
+            "team": team,
+            "age": int(age)  # Convert age to integer
+        }
 
-        user = {"name": name, "email": email, "password": password, "role": role, "team": team}
         save_user(user)
-        return redirect(url_for("login"))
 
-    return render_template("signup.html", teams=teams)
+        return redirect(url_for('signup'))
+
+    return render_template('signup.html', teams=teams)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -518,12 +534,32 @@ def login():
 
     return render_template("login.html")
 
+def load_users():
+    try:
+        with open(json_file, "r") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+# Save users data back to the JSON file
+def save_users(users):
+    with open(json_file, "w") as f:
+        json.dump(users, f, indent=4)
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
     if "user" not in session:
         return redirect(url_for("login"))
 
-    user = session.get("user", {})
+    # Load users from the JSON file
+    users = load_users()
+    user_email = session["user"]["email"]
+
+    # Find the user by email
+    user = next((user for user in users if user['email'] == user_email), None)
+
+    if not user:
+        return "User not found!", 404
+
     if request.method == "POST":
         update_field = request.form.get("update_field")
         new_value = request.form.get("new_value")
@@ -543,22 +579,9 @@ def profile():
         else:
             return "Invalid field update!", 400
 
-        # Save updated user info to session
+        # Save updated user info back to the session and JSON
         session["user"] = user
-
-        # Update the database
-        try:
-            conn = sqlite3.connect(db_file)
-            cursor = conn.cursor()
-            cursor.execute(
-                f"UPDATE users SET {update_field} = ? WHERE email = ?",
-                (new_value if update_field != "team" else user["team"], user["email"]),
-            )
-            conn.commit()
-        except sqlite3.Error as e:
-            return f"Database error: {e}", 500
-        finally:
-            conn.close()
+        save_users(users)
 
         return redirect(url_for("profile"))
 

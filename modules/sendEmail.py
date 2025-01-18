@@ -7,14 +7,13 @@ load_dotenv()
 # Replace with your actual environment variable name
 email_sender = 'vinayak.test.001@gmail.com'
 email_password = os.environ.get("EMAIL_PASSWORD")
-email_receiver = 'vishal214.mishra@gmail.com'
+email_receiver = ''
 if not email_password:
     raise ValueError("EMAIL_PASSWORD environment variable not set or incorrect.")
 
 subject = 'Check Out My New Video'
 body = """
-I've just published a new video on YouTube: https://youtu.be/g_j6ILT-X0k?si=WFU8uuhmdslyuDD6
-
+hi {email_receiver}
 auto email genereated from Surya prabha india 
 """
 

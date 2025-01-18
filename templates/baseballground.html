@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baseball Field</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            background-color: green;
+            /* Set canvas background color to green */
+            position: relative;
+        }
+
+        .draggable {
+            width: 30px;
+            height: 30px;
+            background-color: red;
+            margin: 5px;
+            cursor: pointer;
+            position: absolute;
+            user-select: none;
+        }
+
+        .drag-area {
+            width: 800px;
+            height: 800px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .draggable:active {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="drag-area">
+        <canvas id="baseballField" width="800" height="800"></canvas>
+        <div id="draggable1" class="draggable" draggable="true" style="top: 100px; left: 100px;"></div>
+        <div id="draggable2" class="draggable" draggable="true" style="top: 200px; left: 200px;"></div>
+        <div id="draggable3" class="draggable" draggable="true" style="top: 300px; left: 300px;"></div>
+        <div id="draggable4" class="draggable" draggable="true" style="top: 400px; left: 400px;"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('baseballField');
+        const ctx = canvas.getContext('2d');
+
+        const centerX = 400; // Center of the canvas
+        const centerY = 700; // Adjusted for ground layout
+        const infieldRadius = 150; // Radius for the infield dirt circle
+        const outfieldRadius = 400; // Radius for the outfield fence
+        const basePathLength = 120; // Distance between bases
+        const largeOutfieldRadius = 560; // Larger radius for the arc
+        const largeInfieldRadius = 310; // Larger radius for the inner arc
+
+        // Draw the outfield arc (fence boundary)
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(45 * Math.PI / 180);
+        ctx.beginPath();
+        ctx.arc(0, 0, largeOutfieldRadius, Math.PI, Math.PI * 1.5);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+
+        // Draw the sand-colored infield
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(45 * Math.PI / 180);
+        ctx.beginPath();
+        ctx.arc(0, 0, largeInfieldRadius, Math.PI, Math.PI * 1.5);
+        ctx.lineTo(0, 0);
+        ctx.fillStyle = '#D2B48C'; // Sand color
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'white';
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+
+        // Draw the base paths (home to bases)
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY); // Home plate
+        ctx.lineTo(centerX - basePathLength, centerY - basePathLength); // First base
+        ctx.lineTo(centerX, centerY - 2 * basePathLength); // Second base
+        ctx.lineTo(centerX + basePathLength, centerY - basePathLength); // Third base
+        ctx.lineTo(centerX, centerY); // Back to home
+        ctx.fillStyle = 'green';
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.closePath();
+
+        // Draw the pitcher's mound
+        const pitcherMoundRadius = 15;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY - 35 - infieldRadius / 2, pitcherMoundRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#D2B48C';
+        ctx.fill();
+        ctx.closePath();
+
+        // Draw the foul lines
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(0, 700 - outfieldRadius); // Left foul line
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(800, 700 - outfieldRadius); // Right foul line
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.closePath();
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 40, 0, Math.PI * 2);
+        ctx.fillStyle = '#D2B48C';
+        ctx.fill();
+        ctx.closePath();
+        
+        // Draw home plate
+        ctx.beginPath();
+        ctx.moveTo(centerX - 10, centerY);
+        ctx.lineTo(centerX + 10, centerY);
+        ctx.lineTo(centerX + 15, centerY - 10);
+        ctx.lineTo(centerX, centerY - 20);
+        ctx.lineTo(centerX - 15, centerY - 10);
+        ctx.closePath();
+        ctx.fillStyle = 'white';
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+    
+        
+        
+        // Draw bases (first, second, third)
+        function drawBase(x, y) {
+            ctx.beginPath();
+            ctx.moveTo(x - 10, y - 10);
+            ctx.lineTo(x + 10, y - 10);
+            ctx.lineTo(x + 10, y + 10);
+            ctx.lineTo(x - 10, y + 10);
+            ctx.closePath();
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Draw bases
+        drawBase(centerX - basePathLength, centerY - basePathLength); // First base
+        drawBase(centerX, centerY - 2 * basePathLength); // Second base
+        drawBase(centerX + basePathLength, centerY - basePathLength); // Third base
+
+        // Add labels for bases
+        ctx.fillStyle = 'black';
+        ctx.font = '16px Arial';
+        ctx.fillText('Home', centerX - 20, centerY + 25);
+        ctx.fillText('1st Base', centerX - basePathLength - 30, centerY - basePathLength + 10);
+        ctx.fillText('2nd Base', centerX - 30, centerY - 2 * basePathLength - 10);
+        ctx.fillText('3rd Base', centerX + basePathLength - 30, centerY - basePathLength + 10);
+
+        // Add text for outfield
+        ctx.fillStyle = 'darkblue';
+        ctx.font = '20px Arial';
+        ctx.fillText('Outfield', centerX - 40, centerY - outfieldRadius + 30);
+
+        // Add labels for foul lines
+        ctx.fillStyle = 'black';
+        ctx.fillText('Left Foul Line', 10, 700 - outfieldRadius + 20);
+        ctx.fillText('Right Foul Line', 630, 700 - outfieldRadius + 20);
+
+        // Create draggable elements
+        const draggableSquares = document.querySelectorAll('.draggable');
+        draggableSquares.forEach(square => {
+            square.addEventListener('dragstart', dragStart);
+            square.addEventListener('dragend', dragEnd);
+        });
+
+        // Dragging logic
+        let draggedSquare = null;
+
+        function dragStart(e) {
+            draggedSquare = e.target;
+            setTimeout(() => {
+                draggedSquare.style.opacity = 0.5;
+            }, 0);
+        }
+
+        function dragEnd() {
+            draggedSquare.style.opacity = '';
+            draggedSquare = null;
+        }
+
+        canvas.addEventListener('dragover', function (e) {
+            e.preventDefault(); // Allow drop
+        });
+
+        canvas.addEventListener('drop', function (e) {
+            e.preventDefault();
+            if (draggedSquare) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                draggedSquare.style.left = `${x - 15}px`;
+                draggedSquare.style.top = `${y - 15}px`;
+            }
+        });
+    </script>
+</body>
+
+</html>
