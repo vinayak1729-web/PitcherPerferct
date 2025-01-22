@@ -36,5 +36,17 @@
             "Vishal216"
         ],
         "profile_pic": "/static/default.png"
+    },
+    "baseball@gmail.com": {
+        "email": "baseball@gmail.com",
+        "password": "123",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    },
+    "VinayakShinde": {
+        "email": "V@123.com",
+        "password": "123",
+        "friends": [],
+        "profile_pic": "/static/default.png"
     }
 }
