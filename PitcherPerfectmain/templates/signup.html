@@ -1,0 +1,131 @@
+
+<!-- templates/signup.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baseball Chat - Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        baseball: '#C41E3A',
+                        field: '#2E7D32'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Signup Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
+            <!-- Header with Baseball Design -->
+            <div class="bg-baseball p-6 text-white text-center relative">
+                <div class="absolute top-0 left-0 w-full h-full opacity-10">
+                    <!-- Baseball Stitching Pattern -->
+                    <div class="border-2 border-white rounded-full w-32 h-32 absolute -top-16 -left-16"></div>
+                    <div class="border-2 border-white rounded-full w-32 h-32 absolute -bottom-16 -right-16"></div>
+                </div>
+                <h1 class="text-3xl font-bold">⚾ Join the Team!</h1>
+                <p class="mt-2">Create your Baseball Chat account</p>
+            </div>
+
+            <!-- Signup Form -->
+            <form class="p-6 space-y-6" id="signupForm">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+                    <input type="text" name="username" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-baseball focus:border-baseball dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           placeholder="Choose your player name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                    <input type="email" name="email" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-baseball focus:border-baseball dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                    <input type="password" name="password" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-baseball focus:border-baseball dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           minlength="8">
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Minimum 8 characters
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
+                    <input type="password" name="confirm_password" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-baseball focus:border-baseball dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="terms" required 
+                           class="h-4 w-4 text-baseball focus:ring-baseball border-gray-300 rounded">
+                    <label for="terms" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                        I agree to the <a href="#" class="text-baseball hover:text-red-800">Terms</a> and 
+                        <a href="#" class="text-baseball hover:text-red-800">Privacy Policy</a>
+                    </label>
+                </div>
+                <div>
+                    <button type="submit" 
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-baseball hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-baseball">
+                        Sign Up
+                    </button>
+                </div>
+            </form>
+
+            <!-- Footer -->
+            <div class="px-6 pb-6 text-center">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Already on the roster?
+                    <a href="/login" class="font-medium text-baseball hover:text-red-800 dark:hover:text-red-400">
+                        Sign in
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form submission handling
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            if (formData.get('password') !== formData.get('confirm_password')) {
+                alert("Passwords don't match!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: formData.get('username'),
+                        email: formData.get('email'),
+                        password: formData.get('password')
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/login';
+                } else {
+                    alert(data.error || 'Signup failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred during signup');
+            }
+        });
+    </script>
+</body>
+</html>
