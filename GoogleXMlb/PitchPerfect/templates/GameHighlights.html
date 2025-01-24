@@ -1,0 +1,172 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Details</title>
+
+</head>
+<style>
+    /* Style for the match card */
+    .match {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .match:hover {
+        background-color: #f0f0f0;
+    }
+
+    /* Team logos and team names */
+    .teams {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .team {
+        text-align: center;
+    }
+
+    .team img {
+        display: block;
+        margin: 0 auto;
+    }
+
+    strong {
+        font-size: 18px;
+    }
+
+    /* Game details page */
+    .game-details {
+        background-color: #e9e9e9;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .game-details h2 {
+        margin-bottom: 20px;
+    }
+
+    .game-details p {
+        font-size: 16px;
+    }
+
+    a {
+        text-decoration: none;
+        color: #007bff;
+    }
+</style>
+
+<body>
+
+    <h1>{{ home_team }} vs {{ away_team }}</h1>
+    <p>Score: {{ home_score }} - {{ away_score }}</p>
+    <p>Date: {{ game_date }}</p>
+    <p>Venue: {{ venue }}</p>
+    <p>Status: {{ status }}</p>
+    
+    <h2>Play-by-Play:</h2>
+    <ul>
+        {% for play in play_by_play %}
+            <li>
+                Inning {{ play.inning }} ({{ play.halfInning }}): {{ play.description }}
+                <br>Batter: {{ play.batter }} ({{ play.batSide }}) vs Pitcher: {{ play.pitcher }} ({{ play.pitchHand }})
+                <br>Count: {{ play.balls }} Balls, {{ play.strikes }} Strikes, {{ play.outs }} Outs
+                <br>Event: {{ play.event }} | Type: {{ play.eventType }}
+            </li>
+        {% endfor %}
+    </ul>
+        <a href="{{ url_for('index') }}">Back to Matches</a>
+    </div>
+
+  
+</body>
+<script>
+    // Function to toggle the sidebar
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        if (sidebar.style.left === "-250px") {
+            sidebar.style.left = "0"; // Show the sidebar
+        } else {
+            sidebar.style.left = "-250px"; // Hide the sidebar
+        }
+    }
+
+</script>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ home_team }} vs {{ away_team }} Highlights</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .game-details, .highlights {
+            margin-bottom: 30px;
+        }
+        .highlight-video {
+            margin-bottom: 20px;
+        }
+        .play-by-play {
+            margin-bottom: 20px;
+        }
+        .video-container {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ home_team }} vs {{ away_team }} - Highlights</h1>
+
+    <div class="game-details">
+        <p><strong>Date:</strong> {{ game_date }}</p>
+        <p><strong>Venue:</strong> {{ venue }}</p>
+        <p><strong>Status:</strong> {{ status }}</p>
+        <p><strong>Score:</strong> {{ home_team }} {{ home_score }} - {{ away_team }} {{ away_score }}</p>
+    </div>
+
+    <div class="highlights">
+        <h2>Game Highlights</h2>
+        
+        <!-- Loop through the highlights to display each one -->
+        {% for highlight in highlight_videos %}
+            <div class="highlight-video">
+                <h3>{{ highlight.title }}</h3>
+                <video width="720" height="400" controls>
+                    <source src="{{ highlight.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="play-by-play">
+        <h2>Play-by-Play</h2>
+        <ul>
+            {% for play in play_by_play %}
+                <li>
+                    <strong>{{ play.inning }} - {{ play.description }} ({{ play.event }})</strong><br>
+                    Batter: {{ play.batter }} vs Pitcher: {{ play.pitcher }} | Score: {{ play.homeScore }} - {{ play.awayScore }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="highligtsGeminin">
+        <h1>gemini highlight</h1>
+        <p>{{ geminiHighlights }}</p>
+    </div>
+  
+</body>
+</html>

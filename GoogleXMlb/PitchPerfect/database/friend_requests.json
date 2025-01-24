@@ -1,0 +1,31 @@
+[
+    {
+        "id": "7af182b1-6ceb-456e-b327-296c3a715c0f",
+        "sender": "Vishal@213",
+        "recipient": "Vinayak1729",
+        "status": "accepted",
+        "created_at": "2025-01-19T22:51:49.047707",
+        "responded_at": "2025-01-19T22:52:02.332566"
+    },
+    {
+        "id": "2dd93ffe-7fa0-40ee-9ce4-377f307a1b84",
+        "sender": "Nikhil@12",
+        "recipient": "Vinayak1729",
+        "status": "pending",
+        "created_at": "2025-01-20T11:20:05.197192"
+    },
+    {
+        "id": "ccd083a2-c331-4f74-80f5-981bdad2e306",
+        "sender": "Nikhil@12",
+        "recipient": "Vinayak_1729",
+        "status": "pending",
+        "created_at": "2025-01-20T11:20:10.864286"
+    },
+    {
+        "id": "07642c20-8263-4cf8-87a4-ebcb7f035ebd",
+        "sender": "Nikhil@12",
+        "recipient": "Vishal@213",
+        "status": "pending",
+        "created_at": "2025-01-20T11:20:21.110317"
+    }
+]

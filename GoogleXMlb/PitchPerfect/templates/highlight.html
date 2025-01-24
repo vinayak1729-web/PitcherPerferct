@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLB Match Highlights</title>
+    <style>
+        .container {
+            display: flex;
+        }
+        .sidebar {
+            width: 300px;
+            padding: 20px;
+            border-right: 1px solid #ccc;
+        }
+        .matches {
+            flex: 1;
+            padding: 20px;
+        }
+        .match {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MLB Match Highlights</h1>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <form method="POST">
+                <label for="season">Season:</label>
+                <select name="season" id="season">
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+                <br><br>
+
+                <label for="home_team">Home Team:</label>
+                <select name="home_team" id="home_team">
+                    <option value="">All</option>
+                    {% for league, divisions in teams_data.items() %}
+                        {% for division, teams in divisions.items() %}
+                            {% for team in teams %}
+                                <option value="{{ team.name }}">{{ team.name }}</option>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+                <br><br>
+
+                <label for="away_team">Away Team:</label>
+                <select name="away_team" id="away_team">
+                    <option value="">All</option>
+                    {% for league, divisions in teams_data.items() %}
+                        {% for division, teams in divisions.items() %}
+                            {% for team in teams %}
+                                <option value="{{ team.name }}">{{ team.name }}</option>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+                <br><br>
+
+                <button type="submit">Filter</button>
+            </form>
+        </div>
+
+        <!-- Matches Section -->
+        <div class="matches">
+            {% for match in matches %}
+            <div class="match">
+                <a href="{{ url_for('game_details', game_pk=match['game_pk']) }}" class="highlight-card">
+                    <div class="teams">
+                        <div class="team">
+                            <img src="{{ match['home_team_logo'] }}" alt="{{ match['home_team'] }} Logo" width="40" height="40">
+                            <span>{{ match['home_team'] }}</span>
+                            <strong>{{ match['home_score'] }}</strong>
+                        </div>
+                        <div class="team">
+                            <img src="{{ match['away_team_logo'] }}" alt="{{ match['away_team'] }} Logo" width="40" height="40">
+                            <span>{{ match['away_team'] }}</span>
+                            <strong>{{ match['away_score'] }}</strong>
+                        </div>
+                    </div>
+                    <p>Date: {{ match['game_date'] }}</p>
+                    <p>Venue: {{ match['venue'] }}</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

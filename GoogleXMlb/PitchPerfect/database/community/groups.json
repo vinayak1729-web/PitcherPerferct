@@ -1,0 +1,23 @@
+[
+    {
+        "id": "231267ba-5a33-4a74-8974-382b99fe4a1a",
+        "name": "football rockers",
+        "description": "football kelke rock karne ka \ud83d\ude0e",
+        "creator": "Vinayak1729",
+        "members": [
+            "Vinayak1729"
+        ],
+        "created_at": "2025-01-19T22:54:39.527468"
+    },
+    {
+        "id": "978fb79a-9345-4fa1-8821-22caac6e85c4",
+        "name": "Surya prabha",
+        "description": "",
+        "creator": "Vishal@213",
+        "members": [
+            "Vishal@213",
+            "Vinayak1729"
+        ],
+        "created_at": "2025-01-19T23:36:16.305349"
+    }
+]

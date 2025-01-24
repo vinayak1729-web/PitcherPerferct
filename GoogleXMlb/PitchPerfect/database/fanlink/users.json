@@ -1,0 +1,36 @@
+{
+    "Vinayak121": {
+        "email": "vs8879785320@gmail.com",
+        "password": "v12345678",
+        "friends": [
+            "Vishal216",
+            "Nikhil12"
+        ],
+        "profile_pic": "/static/default.png"
+    },
+    "Vishal216": {
+        "email": "vishal214@gmail.com",
+        "password": "v87654321",
+        "friends": [
+            "Vinayak121",
+            "Nikhil12"
+        ],
+        "profile_pic": "/static/default.png"
+    },
+    "Nikhil12": {
+        "email": "Nikhil@12.com",
+        "password": "Nikhil12",
+        "friends": [
+            "Vishal216",
+            "Vinayak121"
+        ],
+        "profile_pic": "/static/default.png"
+    },
+    "VISHU": {
+        "user_id": "f6ab1e83-8ba2-470d-b255-24601bea0753",
+        "email": "VISHU@1729.COM",
+        "password": "123",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    }
+}

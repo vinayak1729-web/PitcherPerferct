@@ -1,0 +1,47 @@
+[
+    {
+        "user_id": "001729",
+        "name": "vinayak",
+        "email": "shindevinayak233@gmail.com",
+        "password": "Vinayak@1729",
+        "role": "Player",
+        "team": "New York Yankees",
+        "age": 21,
+        "selected_players": null
+    },
+    {
+        "user_id": "001730",
+        "name": "vishal mishra",
+        "email": "vishal214.mishra@gmail.com",
+        "password": "123456789",
+        "role": "Coach",
+        "team": "New York Yankees",
+        "age": 20,
+        "selected_players": [
+            605113,
+            607455,
+            605131,
+            605141
+        ]
+    },
+    {
+        "user_id": "001731",
+        "name": "nikhil",
+        "email": "nikhilb@gmail.com",
+        "password": "1234567",
+        "role": "Player",
+        "team": "New York Yankees",
+        "age": 19,
+        "selected_players": null
+    },
+    {
+        "user_id": "001732",
+        "name": "vinit",
+        "email": "vinitpatel535@gmail.com",
+        "password": "1234",
+        "role": "Fan",
+        "team": "New York Yankees",
+        "age": 21,
+        "selected_players": null
+    }
+]

@@ -1,0 +1,65 @@
+[
+    {
+        "id": "97c9fcfa-964c-4db7-a2d2-2aca5f79b712",
+        "sender": "Vinayak1729",
+        "recipient": "Vishal@213",
+        "content": "hi vishal",
+        "timestamp": "2025-01-19T22:52:10.293521"
+    },
+    {
+        "id": "a2a2ad93-05ef-47ec-bbf3-f93dbbb9d11a",
+        "sender": "Vinayak1729",
+        "recipient": "Vishal@213",
+        "content": "hi Vishal Wssup",
+        "timestamp": "2025-01-19T22:52:27.930549"
+    },
+    {
+        "id": "fddaa2b4-66f5-4bd7-a988-cdde24a3ecc1",
+        "sender": "Vishal@213",
+        "recipient": "Vinayak1729",
+        "content": "hi sorry bro football khel raha tha",
+        "timestamp": "2025-01-19T22:54:03.191833"
+    },
+    {
+        "id": "db2373ad-b524-425a-a065-eb6f0652060d",
+        "sender": "Vinayak1729",
+        "recipient": "Vishal@213",
+        "content": "are par jane ka tha n apne ko",
+        "timestamp": "2025-01-19T23:06:54.493436"
+    },
+    {
+        "id": "949c8e78-9d25-4d54-a432-e328cff720a8",
+        "sender": "Vishal@213",
+        "recipient": "Vinayak1729",
+        "content": "kal jate apn tuesday ko",
+        "timestamp": "2025-01-19T23:07:21.762907"
+    },
+    {
+        "id": "699fb871-f483-4eb8-9081-779d1498ad85",
+        "sender": "Vinayak1729",
+        "recipient": "Vishal@213",
+        "content": "are abb jate na bhai",
+        "timestamp": "2025-01-20T00:14:31.854212"
+    },
+    {
+        "id": "0cdf34a3-3b52-40b9-a61a-01a05a077636",
+        "sender": "Nikhil@12",
+        "recipient": "Vishal@213",
+        "content": "hii",
+        "timestamp": "2025-01-20T11:21:24.712393"
+    },
+    {
+        "id": "28fd3ab1-302e-4ead-8a8c-aa168556ab94",
+        "sender": "Nikhil@12",
+        "recipient": "Vishal@213",
+        "content": "accept the request",
+        "timestamp": "2025-01-20T11:21:33.989941"
+    },
+    {
+        "id": "c9a7b8ba-1d04-447a-9959-90eab37e959d",
+        "sender": "Vishal@213",
+        "recipient": "Nikhil@12",
+        "content": "ok",
+        "timestamp": "2025-01-20T11:22:03.708733"
+    }
+]

@@ -1,0 +1,336 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Messenger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 15px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chat-window {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message-input {
+            padding: 20px;
+            background-color: white;
+            border-top: 1px solid #ddd;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .message.sent {
+            background-color: #0084ff;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.received {
+            background-color: #e4e6eb;
+            color: black;
+        }
+
+        .search-bar {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+        }
+
+        .contact-list, .group-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .contact, .group {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .contact:hover, .group:hover {
+            background-color: #f0f2f5;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #0084ff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0073e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="search-bar">
+                <input type="text" placeholder="Search users or groups..." id="searchInput">
+            </div>
+            <div class="contact-list" id="contactList">
+                <!-- Contacts will be populated here -->
+            </div>
+            <div class="group-list" id="groupList">
+                <!-- Groups will be populated here -->
+            </div>
+            <button class="btn" onclick="showCreateGroupModal()">Create Group</button>
+        </div>
+        
+        <div class="main-content">
+            <div class="header" id="chatHeader">
+                Select a chat to start messaging
+            </div>
+            <div class="chat-window" id="chatWindow">
+                <!-- Messages will be populated here -->
+            </div>
+            <div class="message-input">
+                <input type="text" class="input-field" id="messageInput" placeholder="Type a message...">
+                <button class="btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRecipient = null;
+        let currentGroupId = null;
+
+        // Initialize WebSocket connection
+        const ws = new WebSocket(`ws://${window.location.host}/ws`);
+
+        ws.onmessage = function(event) {
+            const message = JSON.parse(event.data);
+            displayMessage(message);
+        };
+
+        function loadContacts() {
+            fetch('/search_users')
+                .then(response => response.json())
+                .then(data => {
+                    const contactList = document.getElementById('contactList');
+                    contactList.innerHTML = '';
+                    data.users.forEach(user => {
+                        const div = document.createElement('div');
+                        div.className = 'contact';
+                        div.textContent = user.username;
+                        div.onclick = () => startChat(user.username);
+                        contactList.appendChild(div);
+                    });
+                });
+        }
+
+        function loadGroups() {
+            fetch('/groups')
+                .then(response => response.json())
+                .then(data => {
+                    const groupList = document.getElementById('groupList');
+                    groupList.innerHTML = '';
+                    data.groups.forEach(group => {
+                        const div = document.createElement('div');
+                        div.className = 'group';
+                        div.textContent = group.name;
+                        div.onclick = () => startGroupChat(group.id, group.name);
+                        groupList.appendChild(div);
+                    });
+                });
+        }
+
+        function startChat(username) {
+            currentRecipient = username;
+            currentGroupId = null;
+            document.getElementById('chatHeader').textContent = username;
+            loadMessages();
+        }
+
+        function startGroupChat(groupId, groupName) {
+            currentGroupId = groupId;
+            currentRecipient = null;
+            document.getElementById('chatHeader').textContent = groupName;
+            loadMessages();
+        }
+
+        function loadMessages() {
+            const url = currentGroupId ? 
+                `/messages?group_id=${currentGroupId}` : 
+                `/messages?recipient=${currentRecipient}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const chatWindow = document.getElementById('chatWindow');
+                    chatWindow.innerHTML = '';
+                    data.messages.forEach(message => displayMessage(message));
+                });
+        }
+// Fetch message history
+fetch('/get_messages?recipient=username')
+  .then(response => response.json())
+  .then(data => {
+    // Handle messages
+  });
+
+// Send friend request
+fetch('/send_friend_request', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({recipient: 'username'})
+})
+  .then(response => response.json())
+  .then(data => {
+    // Handle response
+  });
+
+// Get pending friend requests
+fetch('/get_friend_requests')
+  .then(response => response.json())
+  .then(data => {
+    // Handle friend requests
+  });
+        function displayMessage(message) {
+            const chatWindow = document.getElementById('chatWindow');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.sender === getCurrentUser() ? 'sent' : 'received'}`;
+            messageDiv.textContent = message.content;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            
+            if (!content) return;
+
+            const messageData = {
+                content: content,
+                recipient: currentRecipient,
+                group_id: currentGroupId
+            };
+
+            fetch('/send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    displayMessage(data.message);
+                }
+            });
+        }
+
+        function showCreateGroupModal() {
+            // Implement group creation modal
+            const groupName = prompt('Enter group name:');
+            if (groupName) {
+                fetch('/create_group', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: groupName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadGroups();
+                    }
+                });
+            }
+        }
+
+        function getCurrentUser() {
+            // Get current user from session
+            return document.querySelector('.header').dataset.username;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadContacts();
+            loadGroups();
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value;
+            fetch(`/search_users?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update contact list with search results
+                    const contactList = document.getElementById('contactList');
+                    contactList.innerHTML = '';
+                    data.users.forEach(user => {
+                        const div = document.createElement('div');
+                        div.className = 'contact';
+                        div.textContent = user.username;
+                        div.onclick = () => startChat(user.username);
+                        contactList.appendChild(div);
+                    });
+                });
+        });
+    </script>
+</body>
+</html>

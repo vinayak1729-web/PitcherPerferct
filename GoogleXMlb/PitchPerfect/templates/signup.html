@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        .player-list { display: flex; flex-wrap: wrap; }
+        .player-item { margin-right: 10px; margin-bottom: 10px; }
+        .player-item img { width: 30px; height: 30px; }
+    </style>
+</head>
+<body>
+    <form method="post">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="number" name="age" placeholder="Age" required>
+
+        <select name="role" required>
+            <option value="Player">Player</option>
+            <option value="Coach">Coach</option>
+            <option value="Fan">Fan</option>
+        </select>
+
+        <select name="team" required>
+            {% for league, divisions in teams.items() %}
+                <optgroup label="{{ league }}">
+                    {% for division, team_list in divisions.items() %}
+                        {% for team in team_list %}
+                            <option value="{{ team.name }}">
+                                <img src="{{ team.logo }}" alt="{{ team.name }}" width="20" height="20">
+                                {{ team.name }}
+                            </option>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </optgroup>
+        </select>
+
+       
+        <button type="submit">Sign Up</button>
+    </form>
+</body>
+</html>

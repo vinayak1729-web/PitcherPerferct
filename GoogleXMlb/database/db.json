@@ -1,0 +1,12 @@
+[
+    {
+        "user_id": "001729",
+        "name": "demo1729",
+        "email": "demo@1729.com",
+        "password": "demo",
+        "role": "Player",
+        "team": "New York Yankees",
+        "age": 20,
+        "selected_players": null
+    }
+]

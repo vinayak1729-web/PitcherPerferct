@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pitcher Perfect</title>
+    <style>
+        :root {
+            --primary-red: #B31942;
+            --primary-blue: #041E42;
+            --light-gray: #f4f4f4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Option 1: Dark Navbar */
+        .navbar-dark {
+            background-color: var(--primary-blue);
+            padding: 0.5rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Option 2: White Navbar */
+        .navbar-light {
+            background-color: white;
+            padding: 0.5rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-image {
+            height: 100%;
+            /* Remove logo background using CSS */
+            mix-blend-mode: multiply; /* This helps with white backgrounds */
+            /* For PNG with transparency, you wouldn't need mix-blend-mode */
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        /* Dark navbar links */
+        .navbar-dark .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-dark .nav-links a:hover {
+            color: var(--primary-red);
+        }
+
+        /* Light navbar links */
+        .navbar-light .nav-links a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-light .nav-links a:hover {
+            color: var(--primary-red);
+        }
+
+        /* Toggle Button */
+        .theme-toggle {
+            padding: 8px 16px;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Option 1: Dark Navbar -->
+    <nav class="navbar-dark" id="navbar">
+        <div class="nav-content">
+            <div class="logo-container">
+                <img src="logo.png" alt="Pitcher Perfect" class="logo-image" style="size: 100px; height: auto;width: 150px;">
+            </div>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#about">About</a>
+                <a href="#training">Training</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <button class="theme-toggle" onclick="toggleNavbar()">Toggle Theme</button>
+        </div>
+    </nav>
+
+    <script>
+        function toggleNavbar() {
+            const navbar = document.getElementById('navbar');
+            if (navbar.classList.contains('navbar-dark')) {
+                navbar.classList.remove('navbar-dark');
+                navbar.classList.add('navbar-light');
+            } else {
+                navbar.classList.remove('navbar-light');
+                navbar.classList.add('navbar-dark');
+            }
+        }
+    </script>
+</body>
+</html>

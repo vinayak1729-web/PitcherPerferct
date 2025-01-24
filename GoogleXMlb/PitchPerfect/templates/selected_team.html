@@ -1,0 +1,123 @@
+
+<style>
+    .players-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .player-card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        position: relative;
+    }
+    
+    .save-timestamp {
+        font-size: 0.8em;
+        color: #666;
+        margin-top: 10px;
+    }
+    
+    .save-actions {
+        margin-top: 20px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .update-save-btn, .delete-save-btn {
+        padding: 10px 20px;
+        margin: 0 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .update-save-btn {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+    }
+    
+    .delete-save-btn {
+        background-color: #f44336;
+        color: white;
+        border: none;
+    }
+</style>
+<div class="saved-players-container">
+    <h1>Your Saved Players</h1>
+    
+    {% if saves %}
+        <div class="save-entry">
+            <div class="players-grid">
+                {% for save in saves %}
+                    {% for player in save.players %}
+                    <div class="player-card" data-save-id="{{ save.id }}" data-player='{{ player }}'
+                        <div class="selection-overlay">
+                            <input type="checkbox" class="player-select" checked />
+                        </div>
+                        <img src="{{ player.headshot_url }}" alt="{{ player.name }}" class="player-image">
+                        <h3>{{ player.name }}</h3>
+                        <p>{{ player.id }}</p>
+                        <p>Jersey Number: {{ player.jersey_number }}</p>
+                        <p>Position: {{ player.position }} ({{ player.type }})</p>
+                        <p>Status: {{ player.status }}</p>
+                        <p>Height: {{ player.height }} | Weight: {{ player.weight }}</p>
+                        <p class="save-timestamp">Saved: {{ save.timestamp }}</p>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            
+            <div class="save-actions">
+                <button id="updateAllPlayersBtn" class="update-save-btn">Update Selected Players</button>
+                <button id="deleteAllPlayersBtn" class="delete-save-btn">Delete Selected Players</button>
+            </div>
+        </div>
+    {% else %}
+        <p>No saved players found.</p>
+    {% endif %}
+</div>
+
+<script>
+    // Handle deleting selected players
+document.getElementById('deleteAllPlayersBtn')?.addEventListener('click', function() {
+    if (!confirm('Are you sure you want to delete all selected players?')) {
+        return;
+    }
+    
+    const selectedSaves = new Set(); // Keep track of unique save IDs
+    
+    // Get all saves that have checked players
+    document.querySelectorAll('.player-select:checked').forEach(checkbox => {
+        const playerCard = checkbox.closest('.player-card');
+        const saveIndex = playerCard.dataset.saveId;
+        selectedSaves.add(saveIndex);
+    });
+    
+    // Delete each save that has selected players
+    const deletePromises = Array.from(selectedSaves).map(saveIndex => {
+        return fetch(`/delete_save/${saveIndex}`, {
+            method: 'POST',  // Ensure it's POST
+            credentials: 'same-origin'
+        }).then(response => response.json());
+    });
+    
+    Promise.all(deletePromises)
+        .then(results => {
+            const successful = results.filter(r => r.success).length;
+            if (successful === deletePromises.length) {
+                alert('All selected players deleted successfully!');
+                location.reload();
+            } else {
+                alert(`Deleted ${successful} out of ${deletePromises.length} saves successfully.`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting players. Please try again.');
+        });
+});
+
+</script>

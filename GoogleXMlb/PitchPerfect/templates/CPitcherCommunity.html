@@ -1,0 +1,298 @@
+<!-- templates/CPitcherCommunity.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <!-- Search Section -->
+        <div class="mb-6">
+            <div class="flex gap-4 mb-4">
+                <input type="text" id="searchInput" placeholder="Search users or groups..." 
+                       class="flex-1 p-2 border rounded">
+                <select id="searchType" class="p-2 border rounded">
+                    <option value="all">All</option>
+                    <option value="users">Users</option>
+                    <option value="groups">Groups</option>
+                </select>
+                <button onclick="search()" class="bg-blue-500 text-white px-4 py-2 rounded">
+                    Search
+                </button>
+                <button onclick="toggleCreateGroup()" class="bg-green-500 text-white px-4 py-2 rounded">
+                    Create Group
+                </button>
+            </div>
+
+            <!-- Create Group Form -->
+            <div id="createGroupForm" class="hidden bg-white p-4 rounded shadow mb-4">
+                <h3 class="text-lg font-bold mb-2">Create New Group</h3>
+                <input type="text" id="groupName" placeholder="Group Name" 
+                       class="w-full p-2 border rounded mb-2">
+                <textarea id="groupDescription" placeholder="Group Description" 
+                          class="w-full p-2 border rounded mb-2"></textarea>
+                <button onclick="createGroup()" class="bg-green-500 text-white px-4 py-2 rounded">
+                    Create
+                </button>
+            </div>
+
+            <!-- Search Results -->
+            <div id="searchResults" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="userResults" class="bg-white p-4 rounded shadow">
+                    <h3 class="font-bold mb-2">Users</h3>
+                    <!-- User results will be populated here -->
+                </div>
+                <div id="groupResults" class="bg-white p-4 rounded shadow">
+                    <h3 class="font-bold mb-2">Groups</h3>
+                    <!-- Group results will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div id="chatSection" class="hidden bg-white rounded shadow p-4">
+            <h3 id="chatHeader" class="font-bold mb-2"></h3>
+            <div id="messagesList" class="h-64 overflow-y-auto border rounded p-2 mb-4"></div>
+            <div class="flex gap-2">
+                <input type="text" id="messageInput" placeholder="Type a message..." 
+                       class="flex-1 p-2 border rounded">
+                <input type="file" id="fileInput" class="hidden" 
+                       accept=".pdf,.doc,.docx,.txt,image/*">
+                <button onclick="document.getElementById('fileInput').click()" 
+                        class="bg-gray-500 text-white px-4 py-2 rounded">
+                    Upload File
+                </button>
+                <button onclick="sendMessage()" class="bg-blue-500 text-white px-4 py-2 rounded">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChat = null;
+
+        // Search functionality
+        async function search() {
+            const query = document.getElementById('searchInput').value;
+            const type = document.getElementById('searchType').value;
+            
+            try {
+                const response = await fetch(`/search?q=${query}&type=${type}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySearchResults(data.results);
+                }
+            } catch (error) {
+                alert('Error performing search');
+            }
+        }
+
+        function displaySearchResults(results) {
+            const userResults = document.getElementById('userResults');
+            const groupResults = document.getElementById('groupResults');
+
+            // Display users
+            userResults.innerHTML = '<h3 class="font-bold mb-2">Users</h3>';
+            results.users.forEach(user => {
+                userResults.innerHTML += `
+                    <div class="flex justify-between items-center p-2 hover:bg-gray-100">
+                        <span>${user.username}</span>
+                        <div>
+                            <button onclick="sendFriendRequest('${user.username}')" 
+                                    class="bg-blue-500 text-white px-2 py-1 rounded mr-2">
+                                Add Friend
+                            </button>
+                            <button onclick="startChat('${user.username}')" 
+                                    class="bg-green-500 text-white px-2 py-1 rounded">
+                                Message
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Display groups
+            groupResults.innerHTML = '<h3 class="font-bold mb-2">Groups</h3>';
+            results.groups.forEach(group => {
+                groupResults.innerHTML += `
+                    <div class="p-2 hover:bg-gray-100">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="font-medium">${group.name}</div>
+                                <div class="text-sm text-gray-500">${group.description}</div>
+                            </div>
+                            <button onclick="joinGroup('${group.id}')" 
+                                    class="bg-blue-500 text-white px-2 py-1 rounded">
+                                Join Group
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Group functionality
+        function toggleCreateGroup() {
+            const form = document.getElementById('createGroupForm');
+            form.classList.toggle('hidden');
+        }
+
+        async function createGroup() {
+            const name = document.getElementById('groupName').value;
+            const description = document.getElementById('groupDescription').value;
+
+            try {
+                const response = await fetch('/create_group', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Group created successfully!');
+                    toggleCreateGroup();
+                    document.getElementById('groupName').value = '';
+                    document.getElementById('groupDescription').value = '';
+                }
+            } catch (error) {
+                alert('Error creating group');
+            }
+        }
+
+        async function joinGroup(groupId) {
+            try {
+                const response = await fetch('/join_group', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ group_id: groupId })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Successfully joined group!');
+                }
+            } catch (error) {
+                alert('Error joining group');
+            }
+        }
+
+        // Chat functionality
+        async function startChat(username) {
+            currentChat = username;
+            document.getElementById('chatSection').classList.remove('hidden');
+            document.getElementById('chatHeader').textContent = `Chat with ${username}`;
+            await loadMessages(username);
+        }
+
+        async function loadMessages(username) {
+            try {
+                const response = await fetch(`/messages/${username}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayMessages(data.messages);
+                }
+            } catch (error) {
+                alert('Error loading messages');
+            }
+        }
+
+        function displayMessages(messages) {
+            const messagesList = document.getElementById('messagesList');
+            messagesList.innerHTML = '';
+            
+            messages.forEach(message => {
+                const isCurrentUser = message.sender === currentChat;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `p-2 rounded mb-2 ${isCurrentUser ? 'bg-gray-100' : 'bg-blue-100 ml-auto'}`;
+                
+                if (message.type === 'file') {
+                    messageDiv.innerHTML = `
+                        <a href="/download/${message.file.path}" class="text-blue-500 hover:underline" 
+                           target="_blank">
+                           📎 ${message.file.name}
+                        </a>
+                    `;
+                } else {
+                    messageDiv.textContent = message.content;
+                }
+                
+                messagesList.appendChild(messageDiv);
+            });
+            
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const fileInput = document.getElementById('fileInput');
+            const message = messageInput.value.trim();
+
+            if (!message && !fileInput.files.length) return;
+
+            try {
+                if (fileInput.files.length) {
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    formData.append('recipient', currentChat);
+                    formData.append('type', 'user');
+
+                    const response = await fetch('/send_file', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        fileInput.value = '';
+                        await loadMessages(currentChat);
+                    }
+                }
+
+                if (message) {
+                    const response = await fetch('/send_message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            recipient: currentChat,
+                            content: message
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        messageInput.value = '';
+                        await loadMessages(currentChat);
+                    }
+                }
+            } catch (error) {
+                alert('Error sending message');
+            }
+        }
+
+        // Friend requests
+        async function sendFriendRequest(username) {
+            try {
+                const response = await fetch('/send_friend_request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Friend request sent successfully!');
+                } else {
+                    alert(data.message || 'Error sending friend request');
+                }
+            } catch (error) {
+                alert('Error sending friend request');
+            }
+        }
+    </script>
+</body>
+</html>

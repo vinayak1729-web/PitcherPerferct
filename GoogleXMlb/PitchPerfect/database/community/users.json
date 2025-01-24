@@ -1,0 +1,32 @@
+[
+    {
+        "id": "08af0649-2cb6-4de6-974c-dd2041b5b3a7",
+        "username": "Vinayak1729",
+        "password": "Vinayak@1729",
+        "email": "shindevinayak233@gmail.com",
+        "created_at": "2025-01-19T22:25:11.379826",
+        "profile_picture": "default.png"
+    },
+    {
+        "id": "02102b84-7b94-42f0-aaaf-85e1665206c5",
+        "username": "Vishal@213",
+        "password": "Vishal@213",
+        "email": "vishal214.mishra@gmail.com",
+        "created_at": "2025-01-19T22:33:43.313020",
+        "profile_picture": "default.png"
+    },
+    {
+        "id": "9bf05cea-dbe3-4f33-8545-fc34c7426924",
+        "username": "Vinayak_1729",
+        "password": "1234",
+        "email": "shindevinayak233@gmail.com",
+        "created_at": "2025-01-20T00:13:48.474050"
+    },
+    {
+        "id": "3010ce92-e934-45e6-9f61-df7ef9ea4cf8",
+        "username": "Nikhil@12",
+        "password": "Nikhil@12",
+        "email": "Nikhil@12.com",
+        "created_at": "2025-01-20T11:19:31.234422"
+    }
+]

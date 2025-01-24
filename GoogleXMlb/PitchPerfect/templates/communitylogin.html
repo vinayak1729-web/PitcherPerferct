@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Signup - Chat Messenger</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin: 20px;
+        }
+
+        .form-title {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, 
+        .form-group textarea:focus {
+            border-color: #1a73e8;
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .password-requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1a73e8;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #1557b0;
+        }
+
+        .btn.secondary {
+            background-color: #f8f9fa;
+            color: #1a73e8;
+            border: 1px solid #1a73e8;
+        }
+
+        .btn.secondary:hover {
+            background-color: #e8f0fe;
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .switch-form a {
+            color: #1a73e8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message,
+        .success-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message {
+            background-color: #fde7e9;
+            color: #b71c1c;
+            border: 1px solid #ef5350;
+        }
+
+        .success-message {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #66bb6a;
+        }
+
+        .form-section {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .privacy-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #f0f2f5;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #1a73e8;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div id="loginForm">
+            <h2 class="form-title">Welcome Back!</h2>
+            <div class="error-message" id="loginError"></div>
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            <button class="btn" onclick="login()">Login</button>
+            <div class="switch-form">
+                New to Chat Messenger? <a href="#" onclick="toggleForms('signupForm')">Create an account</a>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signupForm" style="display: none;">
+            <h2 class="form-title">Create Your Account</h2>
+            <div class="error-message" id="signupError"></div>
+            <div class="success-message" id="signupSuccess"></div>
+
+            <!-- Basic Information -->
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="signupUsername">Username*</label>
+                    <input type="text" id="signupUsername" required>
+                    <div class="password-requirements">
+                        3-20 characters, starts with a letter, only letters, numbers, and underscores
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password*</label>
+                    <input type="password" id="signupPassword" required>
+                    <div class="password-requirements">
+                        Minimum 8 characters, include uppercase, lowercase, number, and special character
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password*</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email*</label>
+                    <input type="email" id="email" required>
+                </div>
+            </div>
+
+            <!-- Profile Information -->
+            <div class="form-section">
+                <div class="avatar-preview" id="avatarPreview">
+                    👤
+                </div>
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName">
+                </div>
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" placeholder="Tell us about yourself..."></textarea>
+                </div>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="form-section">
+                <h3>Privacy Settings</h3>
+                <div class="privacy-options">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showStatus" checked>
+                        <label for="showStatus">Show online status</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showLastSeen" checked>
+                        <label for="showLastSeen">Show last seen</label>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="signup()">Create Account</button>
+            <div class="switch-form">
+                Already have an account? <a href="#" onclick="toggleForms('loginForm')">Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleForms(formToShow) {
+            document.getElementById('loginForm').style.display = formToShow === 'loginForm' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = formToShow === 'signupForm' ? 'block' : 'none';
+            clearMessages();
+        }
+
+        function clearMessages() {
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('signupError').style.display = 'none';
+            document.getElementById('signupSuccess').style.display = 'none';
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showError('loginError', 'Please fill in all fields');
+                return;
+            }
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/';
+                } else {
+                    showError('loginError', data.message || 'Invalid username or password');
+                }
+            })
+            .catch(error => {
+                showError('loginError', 'An error occurred. Please try again.');
+            });
+        }
+
+        function signup() {
+            const username = document.getElementById('signupUsername').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const email = document.getElementById('email').value;
+            const fullName = document.getElementById('fullName').value;
+            const bio = document.getElementById('bio').value;
+            const showStatus = document.getElementById('showStatus').checked;
+            const showLastSeen = document.getElementById('showLastSeen').checked;
+
+            // Basic validation
+            if (!username || !password || !confirmPassword || !email) {
+                showError('signupError', 'Please fill in all required fields');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('signupError', 'Passwords do not match');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showError('signupError', 'Please enter a valid email address');
+                return;
+            }
+
+            fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    email: email,
+                    name: fullName,
+                    bio: bio,
+                    privacy: {
+                        show_status: showStatus,
+                        show_last_seen: showLastSeen
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('signupSuccess', 'Account created successfully! Redirecting to login...');
+                    setTimeout(() => {
+                        toggleForms('loginForm');
+                    }, 2000);
+                } else {
+                    showError('signupError', data.message || 'Error creating account');
+                }
+            })
+            .catch(error => {
+                showError('signupError', 'An error occurred. Please try again.');
+            });
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        // Handle Enter key press
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('loginForm').style.display !== 'none') {
+                    login();
+                } else if (document.getElementById('signupForm').style.display !== 'none') {
+                    signup();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

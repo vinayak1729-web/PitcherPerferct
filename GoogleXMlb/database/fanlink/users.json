@@ -1,0 +1,98 @@
+{
+    "Vinayak121": {
+        "email": "vs8879785320@gmail.com",
+        "password": "v12345678",
+        "friends": [
+            "Vishal216",
+            "Nikhil12",
+            "Vishal216"
+        ],
+        "profile_pic": "/static/default.png"
+    },
+    "Vishal216": {
+        "email": "vishal214@gmail.com",
+        "password": "v87654321",
+        "friends": [
+            "Vinayak121",
+            "Nikhil12",
+            "Vinayak121",
+            "surya",
+            "VinayakShinde"
+        ],
+        "profile_pic": "/static/default.png"
+    },
+    "Nikhil12": {
+        "email": "Nikhil@12.com",
+        "password": "Nikhil12",
+        "friends": [
+            "Vishal216",
+            "Vinayak121"
+        ],
+        "profile_pic": "/static/default.png"
+    },
+    "surya": {
+        "email": "surya@gmail.com",
+        "password": "suryaS2@",
+        "friends": [
+            "Vishal216"
+        ],
+        "profile_pic": "/static/default.png"
+    },
+    "baseball@gmail.com": {
+        "email": "baseball@gmail.com",
+        "password": "123",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    },
+    "VinayakShinde": {
+        "email": "V@123.com",
+        "password": "123",
+        "friends": [
+            "Vishal216",
+            "VinayakShinde",
+            "VinayakShinde"
+        ],
+        "profile_pic": "/static/default.png"
+    },
+    "Vinayak@2": {
+        "email": "V@123.com",
+        "password": "123",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    },
+    "gg": {
+        "user_id": "c8a5d7a9-f73f-405b-9e76-30d2bf5f6590",
+        "email": "yes@gmail.com",
+        "password": "12345678",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    },
+    "rr": {
+        "user_id": "06179227-179c-48c1-bb66-c10d2d96d686",
+        "email": "yes@gmail.com",
+        "password": "1234567",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    },
+    "demo22": {
+        "user_id": "39ebf4bc-c4f5-4846-a0b3-c80c7f44c1be",
+        "email": "base@gmail.com",
+        "password": "123123",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    },
+    "yourDady": {
+        "user_id": "1333612e-4b7b-44e4-bd6a-cfa6f2ea1dc0",
+        "email": "dad@gmail.com",
+        "password": "123",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    },
+    "yourDady22": {
+        "user_id": "43d05d87-1c80-4446-b291-beb3a9433990",
+        "email": "dad@gmail.com",
+        "password": "123",
+        "friends": [],
+        "profile_pic": "/static/default.png"
+    }
+}
